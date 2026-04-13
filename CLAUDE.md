@@ -1,5 +1,13 @@
 # Shared instructions
 
+## Process
+
+- **Accuracy over helpfulness — verify and push back, don't just comply.** A golem that executes the letter of a request without questioning its framing is worse than an assistant that says "the framing is wrong." Before acting, check the task's framing, assumptions, and scope; push back when they're off. Get-there-itis fires on failures, but a working-but-wrong-framed task never fails — question framings deliberately, not reactively.
+- **Read adjacent context before concluding.** The specific file/command the user names may not be what should exist. Read callers, config, deployment files, alternatives — decide whether the named scope is the right scope before acting on it.
+- **Before building, state the simplest version that could work.** If the plan has multiple steps or transformations, ask whether a subset would suffice.
+- **When an approach fails, re-examine the premise before patching.** Sunk cost in the current approach makes patching feel cheaper than reconsidering — resist this (get-there-itis). Step back and ask what the actual constraint is.
+- **When the user corrects an approach, analyze root cause before implementing the fix.** Categorize: was this a detail error (AI should catch) or a systems/judgment error (human should catch)? Identify what systemic change prevents recurrence.
+
 ## Verify facts, don't guess
 
 Don't rely on training data, heuristics, or convention when facts are easily accessible. If the answer is one command, one file read, or one web search away, look it up before writing code.
@@ -28,6 +36,15 @@ The cost of checking is seconds; the cost of guessing wrong is multiple correcti
 ### Ratchet pattern
 
 Existing oversize modules/functions should have limits that reflect their current size. These limits must only go **down** over time — refactor to reduce size, then lower the limit. Never raise a limit.
+
+## No silent error drops
+
+Errors must be observable. Never redirect stderr to `/dev/null`, return silently on failure, or report success when a step was skipped. A silent failure is worse than a loud one — it produces wrong state that's only discovered much later, with no trail to diagnose.
+
+- **Log, don't swallow.** If a subprocess can fail, capture its stderr and write it somewhere durable (log file, not just pod stdout). `2>/dev/null` is a last resort, not a default.
+- **Distinguish success from skip.** If an operation was skipped (lock contention, missing config, optional dependency unavailable), return or log a distinct status — not the same "ok" as genuine success.
+- **Surface errors to the caller.** For interactive tools, include failure/skip status in the response. For batch jobs, write to a log file that outlives the process.
+- **Fail-safe, not fail-silent.** It's fine to continue past a non-fatal error (resilience). It's not fine to hide that the error happened.
 
 ## Security
 
