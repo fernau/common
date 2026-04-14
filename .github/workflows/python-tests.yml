@@ -17,6 +17,13 @@ on:
         description: "Space-separated system packages to install via apt-get"
         type: string
         default: ""
+      pre-test-command:
+        description: >-
+          Shell command to run after dependency install but before any
+          tests. Typical use: build or pull a Docker image used by
+          integration tests, seed test data, warm caches. Skipped if empty.
+        type: string
+        default: ""
 
 jobs:
   tests:
@@ -32,6 +39,10 @@ jobs:
 
       - name: Install dependencies
         run: ${{ inputs.install-command }}
+
+      - name: Pre-test command
+        if: inputs.pre-test-command != ''
+        run: ${{ inputs.pre-test-command }}
 
       - name: Run unit tests
         run: ${{ inputs.unit-test-command }}
