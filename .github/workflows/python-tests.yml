@@ -42,6 +42,13 @@ jobs:
 
       - name: Pre-test command
         if: inputs.pre-test-command != ''
+        # GITHUB_TOKEN and GITHUB_ACTOR are exported so the command can
+        # `docker login ghcr.io`, gh-api call, etc. without the caller
+        # passing secrets through `with:` (which GHA rejects at parse
+        # time because inputs are evaluated before secrets are resolved).
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: ${{ inputs.pre-test-command }}
 
       - name: Run unit tests
